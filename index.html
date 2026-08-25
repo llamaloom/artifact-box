@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Vault</title>
+
+<!-- PWA / iOS home-screen setup -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12100E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vault">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== Library (home) screen ===== -->
+<div id="screen-library" class="screen active">
+  <header class="topbar">
+    <h1>Vault</h1>
+    <button id="btn-add" class="icon-btn" aria-label="Add artifact">+</button>
+  </header>
+
+  <div class="searchbar">
+    <input id="search-input" type="text" placeholder="Search your apps" autocomplete="off">
+  </div>
+
+  <nav id="category-rail" class="category-rail">
+    <button class="chip active" data-cat="__all__">All</button>
+    <button class="chip" data-cat="__uncat__">Uncategorized</button>
+    <!-- dynamic chips inserted here -->
+    <button id="btn-new-cat" class="chip chip-ghost">+ Category</button>
+  </nav>
+
+  <main id="grid" class="grid"></main>
+
+  <div id="empty-state" class="empty-state hidden">
+    <div class="empty-icon">⌘</div>
+    <p>No apps yet.</p>
+    <p class="empty-sub">Tap + to add your first Claude artifact.</p>
+  </div>
+</div>
+
+<!-- ===== Viewer (fullscreen run) screen ===== -->
+<div id="screen-viewer" class="screen">
+  <header class="viewer-bar">
+    <button id="btn-back" class="icon-btn" aria-label="Back">‹</button>
+    <span id="viewer-title" class="viewer-title">App</span>
+    <button id="btn-viewer-menu" class="icon-btn" aria-label="Options">⋯</button>
+  </header>
+  <div id="viewer-frame-wrap" class="viewer-frame-wrap">
+    <iframe id="viewer-frame" title="artifact preview"
+      sandbox="allow-scripts allow-forms allow-popups allow-modals"
+      referrerpolicy="no-referrer"></iframe>
+  </div>
+</div>
+
+<!-- ===== Add sheet ===== -->
+<div id="sheet-add" class="sheet-backdrop hidden">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Add artifact</h2>
+    <p class="sheet-sub">Upload the file Claude gave you (.html, .htm, .jsx, .js, .json, .svg)</p>
+    <input id="file-input" type="file" accept=".html,.htm,.jsx,.js,.json,.svg,text/html,application/json" multiple hidden>
+    <button id="btn-choose-file" class="btn-primary">Choose file</button>
+    <div id="add-progress" class="add-progress hidden"></div>
+    <button id="btn-cancel-add" class="btn-ghost">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== Edit / detail sheet ===== -->
+<div id="sheet-edit" class="sheet-backdrop hidden">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Edit app</h2>
+    <label class="field-label">Name</label>
+    <input id="edit-name" type="text" class="field-input">
+    <label class="field-label">Category</label>
+    <select id="edit-category" class="field-input"></select>
+    <div class="sheet-row">
+      <button id="btn-delete" class="btn-danger">Delete</button>
+      <button id="btn-save-edit" class="btn-primary">Save</button>
+    </div>
+    <button id="btn-cancel-edit" class="btn-ghost">Close</button>
+  </div>
+</div>
+
+<!-- ===== New category sheet ===== -->
+<div id="sheet-newcat" class="sheet-backdrop hidden">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>New category</h2>
+    <input id="newcat-input" type="text" class="field-input" placeholder="e.g. Client Demos">
+    <div class="sheet-row">
+      <button id="btn-cancel-newcat" class="btn-ghost">Cancel</button>
+      <button id="btn-save-newcat" class="btn-primary">Create</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
