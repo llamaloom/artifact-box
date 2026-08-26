@@ -1,4 +1,3 @@
-
 /* =========================================================
    Vault — local Claude-artifact launcher
    Everything below runs 100% on-device. Nothing is uploaded
@@ -345,30 +344,11 @@ let currentViewerAppId = null;
 function openViewer(app){
   currentViewerAppId = app.id;
   const frame = document.getElementById("viewer-frame");
+  const loading = document.getElementById("viewer-loading");
+  loading.classList.remove("hidden");
+  frame.onload = ()=> loading.classList.add("hidden");
   frame.srcdoc = app.code;
   showScreen("screen-viewer");
-}
-
-function openSwitchSheet(){
-  const list = document.getElementById("switch-list");
-  list.innerHTML = "";
-  apps
-    .filter(a=>a.id!==currentViewerAppId)
-    .sort((a,b)=>b.createdAt-a.createdAt)
-    .forEach(app=>{
-      const {c1,c2,initials} = iconFor(app);
-      const row = document.createElement("button");
-      row.className = "switch-row";
-      row.innerHTML = `
-        <span class="switch-icon" style="background:linear-gradient(160deg,${c1},${c2})">${initials}</span>
-        <span class="switch-name">${escapeHtml(app.name)}</span>`;
-      row.addEventListener("click", ()=>{ closeSheet("sheet-switch"); openViewer(app); });
-      list.appendChild(row);
-    });
-  if(!list.children.length){
-    list.innerHTML = `<p style="color:var(--text-dim);font-size:14px;padding:10px 6px;">No other apps yet.</p>`;
-  }
-  openSheet("sheet-switch");
 }
 
 /* ---------------- Edit sheet ---------------- */
@@ -446,14 +426,6 @@ function bindEvents(){
   });
 
   document.getElementById("btn-back").addEventListener("click", ()=>{
-    document.getElementById("viewer-frame").srcdoc = "about:blank";
-    currentViewerAppId = null;
-    showScreen("screen-library");
-  });
-
-  document.getElementById("btn-viewer-menu").addEventListener("click", openSwitchSheet);
-  document.getElementById("btn-switch-close").addEventListener("click", ()=>{
-    closeSheet("sheet-switch");
     document.getElementById("viewer-frame").srcdoc = "about:blank";
     currentViewerAppId = null;
     showScreen("screen-library");
