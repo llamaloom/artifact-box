@@ -344,7 +344,6 @@ let currentViewerAppId = null;
 
 function openViewer(app){
   currentViewerAppId = app.id;
-  document.getElementById("viewer-title").textContent = app.name;
   const frame = document.getElementById("viewer-frame");
   frame.srcdoc = app.code;
   showScreen("screen-viewer");
