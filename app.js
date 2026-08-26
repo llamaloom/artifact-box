@@ -171,7 +171,7 @@ function detectType(filename, text){
   const ext = filename.split(".").pop().toLowerCase();
   if(ext==="html" || ext==="htm") return "html";
   if(ext==="svg") return "svg";
-  if(ext==="jsx" || ext==="js") return "react";
+  if(ext==="jsx" || ext==="js" || ext==="tsx" || ext==="ts") return "react";
   if(ext==="json") return "json";
   // fallback: sniff content
   const trimmed = text.trim();
@@ -181,14 +181,58 @@ function detectType(filename, text){
   return "other";
 }
 
+// Injected into every artifact so fixed-width/desktop-sized content
+// scales up to fill the phone screen instead of rendering small and
+// letterboxed. Only scales width (height scrolls naturally), so long
+// scrollable pages aren't squashed.
+const AUTOFIT_SCRIPT = `
+<script>
+(function(){
+  function fit(){
+    try{
+      var body = document.body;
+      if(!body || body.dataset.__vaultFitted) return;
+      var wrapper = document.createElement('div');
+      while(body.firstChild){ wrapper.appendChild(body.firstChild); }
+      body.appendChild(wrapper);
+      body.style.margin = '0';
+      document.documentElement.style.margin = '0';
+      var contentW = wrapper.scrollWidth;
+      var vw = window.innerWidth;
+      if(contentW > 10 && Math.abs(vw/contentW - 1) > 0.03){
+        var scale = vw / contentW;
+        wrapper.style.transformOrigin = 'top left';
+        wrapper.style.transform = 'scale(' + scale + ')';
+        wrapper.style.width = contentW + 'px';
+        requestAnimationFrame(function(){
+          body.style.minHeight = (wrapper.scrollHeight * scale) + 'px';
+        });
+      }
+      body.dataset.__vaultFitted = '1';
+    }catch(e){ /* fail silently, never block the artifact */ }
+  }
+  window.addEventListener('load', function(){ setTimeout(fit, 60); });
+})();
+<\/script>`;
+
+function injectAutoFit(html){
+  if(/<\/body>/i.test(html)) return html.replace(/<\/body>/i, AUTOFIT_SCRIPT + "</body>");
+  if(/<\/html>/i.test(html)) return html.replace(/<\/html>/i, AUTOFIT_SCRIPT + "</html>");
+  return html + AUTOFIT_SCRIPT;
+}
+
 function buildRunnable(type, rawText, filename){
-  if(type==="html") return rawText;
+  if(type==="html") return injectAutoFit(rawText);
 
   if(type==="svg") return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
     <style>html,body{margin:0;height:100%;display:flex;align-items:center;justify-content:center;background:#fff;}
-    svg{max-width:100%;max-height:100%;}</style></head><body>${rawText}</body></html>`;
+    svg{max-width:100%;max-height:100%;}</style></head><body>${rawText}${AUTOFIT_SCRIPT}</body></html>`;
 
   if(type==="react"){
+    // Source is embedded as a JSON string and transformed at runtime with
+    // Babel.transform (not the auto data-presets scanner) so we can pass
+    // explicit TypeScript options — this is what makes .tsx work, not just .jsx.
+    const srcJson = JSON.stringify(rawText);
     return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -196,12 +240,35 @@ function buildRunnable(type, rawText, filename){
     <script src="https://cdn.tailwindcss.com"></script>
     <style>html,body{margin:0;}</style>
     </head><body><div id="root"></div>
-    <script type="text/babel" data-presets="react">
-      ${rawText}
-      const __root = ReactDOM.createRoot(document.getElementById('root'));
-      const __Comp = (typeof App!=='undefined') ? App : (typeof Component!=='undefined' ? Component : null);
-      if(__Comp){ __root.render(React.createElement(__Comp)); }
-    </script></body></html>`;
+    <div id="__vault_err" style="display:none;font-family:-apple-system;color:#a00;padding:16px;white-space:pre-wrap;"></div>
+    <script>
+      try{
+        var __src = ${srcJson};
+        var __out = Babel.transform(__src, {
+          filename: 'artifact.tsx',
+          presets: [
+            'react',
+            ['typescript', { isTSX: true, allExtensions: true }]
+          ]
+        }).code;
+        var __s = document.createElement('script');
+        __s.text = __out;
+        document.body.appendChild(__s);
+        var __Comp = (typeof App!=='undefined') ? App : (typeof Component!=='undefined' ? Component : (typeof Default!=='undefined' ? Default : null));
+        if(!__Comp && typeof exports!=='undefined' && exports.default){ __Comp = exports.default; }
+        if(__Comp){
+          ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__Comp));
+        } else {
+          document.getElementById('__vault_err').style.display='block';
+          document.getElementById('__vault_err').textContent = "Vault couldn't find a component to render (expected 'App' or 'Component').";
+        }
+      }catch(e){
+        document.getElementById('__vault_err').style.display='block';
+        document.getElementById('__vault_err').textContent = 'Render error: ' + e.message;
+      }
+    </script>
+    ${AUTOFIT_SCRIPT}
+    </body></html>`;
   }
 
   if(type==="json"){
@@ -257,11 +324,36 @@ async function handleFiles(fileList){
 }
 
 /* ---------------- Viewer ---------------- */
+let currentViewerAppId = null;
+
 function openViewer(app){
+  currentViewerAppId = app.id;
   document.getElementById("viewer-title").textContent = app.name;
   const frame = document.getElementById("viewer-frame");
   frame.srcdoc = app.code;
   showScreen("screen-viewer");
+}
+
+function openSwitchSheet(){
+  const list = document.getElementById("switch-list");
+  list.innerHTML = "";
+  apps
+    .filter(a=>a.id!==currentViewerAppId)
+    .sort((a,b)=>b.createdAt-a.createdAt)
+    .forEach(app=>{
+      const {c1,c2,initials} = iconFor(app);
+      const row = document.createElement("button");
+      row.className = "switch-row";
+      row.innerHTML = `
+        <span class="switch-icon" style="background:linear-gradient(160deg,${c1},${c2})">${initials}</span>
+        <span class="switch-name">${escapeHtml(app.name)}</span>`;
+      row.addEventListener("click", ()=>{ closeSheet("sheet-switch"); openViewer(app); });
+      list.appendChild(row);
+    });
+  if(!list.children.length){
+    list.innerHTML = `<p style="color:var(--text-dim);font-size:14px;padding:10px 6px;">No other apps yet.</p>`;
+  }
+  openSheet("sheet-switch");
 }
 
 /* ---------------- Edit sheet ---------------- */
@@ -340,11 +432,15 @@ function bindEvents(){
 
   document.getElementById("btn-back").addEventListener("click", ()=>{
     document.getElementById("viewer-frame").srcdoc = "about:blank";
+    currentViewerAppId = null;
     showScreen("screen-library");
   });
 
-  document.getElementById("btn-viewer-menu").addEventListener("click", ()=>{
-    gridEditMode = false;
+  document.getElementById("btn-viewer-menu").addEventListener("click", openSwitchSheet);
+  document.getElementById("btn-switch-close").addEventListener("click", ()=>{
+    closeSheet("sheet-switch");
+    document.getElementById("viewer-frame").srcdoc = "about:blank";
+    currentViewerAppId = null;
     showScreen("screen-library");
   });
 
