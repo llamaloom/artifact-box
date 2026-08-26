@@ -48,10 +48,8 @@
 
 <!-- ===== Viewer (fullscreen run) screen ===== -->
 <div id="screen-viewer" class="screen">
-  <header class="viewer-bar">
-    <button id="btn-back" class="icon-btn" aria-label="Back">‹</button>
-    <button id="btn-viewer-menu" class="icon-btn" aria-label="Options">⋯</button>
-  </header>
+  <button id="btn-back" class="viewer-back-btn" aria-label="Back">‹</button>
+  <div id="viewer-loading" class="viewer-loading hidden">Loading…</div>
   <div id="viewer-frame-wrap" class="viewer-frame-wrap">
     <iframe id="viewer-frame" title="artifact preview"
       sandbox="allow-scripts allow-forms allow-popups allow-modals"
@@ -72,15 +70,6 @@
   </div>
 </div>
 
-<!-- ===== Switch app sheet ===== -->
-<div id="sheet-switch" class="sheet-backdrop hidden">
-  <div class="sheet sheet-tall">
-    <div class="sheet-handle"></div>
-    <h2>Switch app</h2>
-    <button id="btn-switch-close" class="btn-ghost switch-close-btn">‹ Back to Library</button>
-    <div id="switch-list" class="switch-list"></div>
-  </div>
-</div>
 
 <!-- ===== Edit / detail sheet ===== -->
 <div id="sheet-edit" class="sheet-backdrop hidden">
