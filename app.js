@@ -1,3 +1,4 @@
+
 /* =========================================================
    Vault — local Claude-artifact launcher
    Everything below runs 100% on-device. Nothing is uploaded
@@ -239,7 +240,7 @@ function buildRunnable(type, rawText, filename){
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>html,body{margin:0;}</style>
+    <style>html,body,#root{margin:0;height:100%;min-height:100dvh;}</style>
     </head><body><div id="root"></div>
     <div id="__vault_err" style="display:none;font-family:-apple-system;color:#a00;padding:16px;white-space:pre-wrap;"></div>
     <script>
@@ -283,7 +284,6 @@ function buildRunnable(type, rawText, filename){
         __vaultShowError('Render error: ' + e.message);
       }
     </script>
-    ${AUTOFIT_SCRIPT}
     </body></html>`;
   }
 
