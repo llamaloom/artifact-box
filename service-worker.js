@@ -1,4 +1,4 @@
-const CACHE = "vault-shell-v1";
+const CACHE = "vault-shell-v2";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -24,13 +24,20 @@ self.addEventListener("activate", (e)=>{
   self.clients.claim();
 });
 
-// Cache-first for our own shell files only. Everything else (e.g. CDN
-// scripts loaded inside a viewed artifact) goes straight to the network.
+// Network-first for our own shell files: always try to get the latest
+// version first, and only fall back to the saved copy if there's no
+// internet connection. This means future updates show up immediately.
 self.addEventListener("fetch", (e)=>{
   const url = new URL(e.request.url);
   if(url.origin === self.location.origin){
     e.respondWith(
-      caches.match(e.request).then(cached=> cached || fetch(e.request))
+      fetch(e.request)
+        .then(res=>{
+          const copy = res.clone();
+          caches.open(CACHE).then(c=>c.put(e.request, copy));
+          return res;
+        })
+        .catch(()=> caches.match(e.request))
     );
   }
 });
