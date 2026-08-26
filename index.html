@@ -64,11 +64,21 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <h2>Add artifact</h2>
-    <p class="sheet-sub">Upload the file Claude gave you (.html, .htm, .jsx, .js, .json, .svg)</p>
-    <input id="file-input" type="file" accept=".html,.htm,.jsx,.js,.json,.svg,text/html,application/json" multiple hidden>
+    <p class="sheet-sub">Upload the file Claude gave you (.html, .htm, .jsx, .tsx, .js, .ts, .json, .svg)</p>
+    <input id="file-input" type="file" accept=".html,.htm,.jsx,.js,.tsx,.ts,.json,.svg,text/html,application/json" multiple hidden>
     <button id="btn-choose-file" class="btn-primary">Choose file</button>
     <div id="add-progress" class="add-progress hidden"></div>
     <button id="btn-cancel-add" class="btn-ghost">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== Switch app sheet ===== -->
+<div id="sheet-switch" class="sheet-backdrop hidden">
+  <div class="sheet sheet-tall">
+    <div class="sheet-handle"></div>
+    <h2>Switch app</h2>
+    <button id="btn-switch-close" class="btn-ghost switch-close-btn">‹ Back to Library</button>
+    <div id="switch-list" class="switch-list"></div>
   </div>
 </div>
 
