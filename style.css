@@ -1,4 +1,3 @@
-
 :root{
   --bg:#0F0E13;
   --surface:#1B1922;
@@ -112,13 +111,18 @@ body{
 
 /* ---------- Viewer ---------- */
 .viewer-bar{
-  padding:calc(var(--safe-top) + 10px) 14px 10px;
+  position:absolute; top:0; left:0; right:0; z-index:10;
+  padding:calc(var(--safe-top) + 8px) 12px 8px;
   display:flex; align-items:center; justify-content:space-between;
-  background:var(--surface); border-bottom:1px solid var(--line);
+  background:linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
+  border-bottom:none;
+  pointer-events:none;
 }
-.viewer-title{font-size:15px; font-weight:700; flex:1; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 8px;}
-.viewer-frame-wrap{flex:1; background:#fff;}
+.viewer-bar .icon-btn{ pointer-events:auto; background:rgba(20,20,24,.55); backdrop-filter:blur(6px); border-color:rgba(255,255,255,.15); }
+.viewer-title{ pointer-events:auto; background:rgba(20,20,24,.55); backdrop-filter:blur(6px); border-radius:10px; padding:6px 10px; flex:1; margin:0 8px; text-align:center; font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.viewer-frame-wrap{position:absolute; inset:0; background:#fff;}
 #viewer-frame{width:100%; height:100%; border:0;}
+#screen-viewer{position:relative;}
 
 /* ---------- Sheets ---------- */
 .sheet-backdrop{
