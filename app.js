@@ -229,9 +229,10 @@ function buildRunnable(type, rawText, filename){
     svg{max-width:100%;max-height:100%;}</style></head><body>${rawText}${AUTOFIT_SCRIPT}</body></html>`;
 
   if(type==="react"){
-    // Source is embedded as a JSON string and transformed at runtime with
-    // Babel.transform (not the auto data-presets scanner) so we can pass
-    // explicit TypeScript options — this is what makes .tsx work, not just .jsx.
+    // Source is embedded as a JSON string and transformed at runtime.
+    // We add the commonjs-modules plugin so `export default X` and
+    // `import X from 'y'` work no matter what the component is named —
+    // not just files that happen to define a global called "App".
     const srcJson = JSON.stringify(rawText);
     return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -242,6 +243,10 @@ function buildRunnable(type, rawText, filename){
     </head><body><div id="root"></div>
     <div id="__vault_err" style="display:none;font-family:-apple-system;color:#a00;padding:16px;white-space:pre-wrap;"></div>
     <script>
+      function __vaultShowError(msg){
+        document.getElementById('__vault_err').style.display='block';
+        document.getElementById('__vault_err').textContent = msg;
+      }
       try{
         var __src = ${srcJson};
         var __out = Babel.transform(__src, {
@@ -249,22 +254,33 @@ function buildRunnable(type, rawText, filename){
           presets: [
             'react',
             ['typescript', { isTSX: true, allExtensions: true }]
-          ]
+          ],
+          plugins: ['transform-modules-commonjs']
         }).code;
-        var __s = document.createElement('script');
-        __s.text = __out;
-        document.body.appendChild(__s);
-        var __Comp = (typeof App!=='undefined') ? App : (typeof Component!=='undefined' ? Component : (typeof Default!=='undefined' ? Default : null));
-        if(!__Comp && typeof exports!=='undefined' && exports.default){ __Comp = exports.default; }
-        if(__Comp){
+
+        // Minimal CommonJS shim so import/export work in a plain <script>.
+        var module = { exports: {} };
+        var exports = module.exports;
+        function require(name){
+          if(name === 'react') return React;
+          if(name === 'react-dom' || name === 'react-dom/client') return ReactDOM;
+          throw new Error("This artifact imports '" + name + "', which Vault doesn't have loaded yet. Tell Claude which library this is and it can be added.");
+        }
+
+        (new Function('module','exports','require','React','ReactDOM', __out))
+          (module, exports, require, React, ReactDOM);
+
+        var __Comp = module.exports && (module.exports.default || module.exports);
+        if(!__Comp && typeof App!=='undefined') __Comp = App;
+        if(!__Comp && typeof Component!=='undefined') __Comp = Component;
+
+        if(typeof __Comp === 'function' || (typeof __Comp === 'object' && __Comp && __Comp.$$typeof)){
           ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__Comp));
         } else {
-          document.getElementById('__vault_err').style.display='block';
-          document.getElementById('__vault_err').textContent = "Vault couldn't find a component to render (expected 'App' or 'Component').";
+          __vaultShowError("Vault couldn't find a component to render. Make sure the file has a default export (export default YourComponent).");
         }
       }catch(e){
-        document.getElementById('__vault_err').style.display='block';
-        document.getElementById('__vault_err').textContent = 'Render error: ' + e.message;
+        __vaultShowError('Render error: ' + e.message);
       }
     </script>
     ${AUTOFIT_SCRIPT}
