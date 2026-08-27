@@ -1,12 +1,12 @@
 :root{
-  --bg:#0F0E13;
+  --bg:#1B1B1E;
   --surface:#1B1922;
   --surface-2:#242230;
   --line:#2E2B3A;
   --text:#F2F0EB;
   --text-dim:#938FA3;
-  --accent:#6F5AF6;
-  --accent-dim:#4B3FA8;
+  --accent:#A3E635;
+  --accent-dim:#65A30D;
   --danger:#E5584F;
   --radius:20px;
   --safe-top:env(safe-area-inset-top);
@@ -14,16 +14,17 @@
 }
 
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{height:100%; overscroll-behavior:none;}
+html,body{
+  height:100%; margin:0; position:fixed; inset:0; width:100%;
+  overflow:hidden; background:var(--bg); overscroll-behavior:none;
+}
 body{
-  margin:0;
-  background:var(--bg);
   color:var(--text);
   font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing:antialiased;
 }
 
-.screen{display:none; min-height:100dvh; flex-direction:column;}
+.screen{display:none; height:100dvh; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch;}
 .screen.active{display:flex;}
 
 /* ---------- Topbar / library ---------- */
@@ -60,7 +61,7 @@ body{
   background:var(--surface); border:1px solid var(--line);
   color:var(--text-dim); font-size:14px; font-weight:600; white-space:nowrap;
 }
-.chip.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+.chip.active{background:var(--accent); border-color:var(--accent); color:#12140A;}
 .chip-ghost{color:var(--accent); border-style:dashed;}
 
 /* ---------- App grid ---------- */
@@ -111,9 +112,12 @@ body{
 
 /* ---------- Viewer ---------- */
 #screen-viewer{position:relative; padding:0;}
+.viewer-statusbar{
+  flex:0 0 auto; height:var(--safe-top); background:var(--bg);
+}
 .viewer-back-btn{
   position:absolute; z-index:10;
-  top:calc(var(--safe-top) + 8px); left:12px;
+  top:calc(var(--safe-top) + 10px); left:12px;
   width:38px; height:38px; border-radius:12px;
   background:rgba(20,20,24,.5); backdrop-filter:blur(6px);
   border:1px solid rgba(255,255,255,.15); color:#fff; font-size:20px; line-height:1;
@@ -121,12 +125,12 @@ body{
 }
 .viewer-back-btn:active{background:rgba(20,20,24,.75);}
 .viewer-loading{
-  position:absolute; inset:0; z-index:5;
+  position:absolute; top:var(--safe-top); left:0; right:0; bottom:0; z-index:5;
   display:flex; align-items:center; justify-content:center;
   background:var(--bg); color:var(--text-dim); font-size:14px;
 }
 .viewer-loading.hidden{display:none;}
-.viewer-frame-wrap{position:absolute; inset:0; background:#fff;}
+.viewer-frame-wrap{flex:1; background:#fff;}
 #viewer-frame{width:100%; height:100%; border:0;}
 
 /* ---------- Sheets ---------- */
@@ -153,7 +157,7 @@ body{
 .sheet-row{display:flex; gap:10px; margin-top:20px;}
 .btn-primary{
   width:100%; padding:14px; border-radius:14px; border:none;
-  background:var(--accent); color:#fff; font-size:16px; font-weight:700; margin-top:14px;
+  background:var(--accent); color:#12140A; font-size:16px; font-weight:700; margin-top:14px;
 }
 .btn-danger{
   flex:1; padding:14px; border-radius:14px; border:none;
