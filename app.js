@@ -342,9 +342,18 @@ async function handleFiles(fileList){
 let currentViewerAppId = null;
 
 function openViewer(app){
-  currentViewerAppId = app.id;
   const frame = document.getElementById("viewer-frame");
   const loading = document.getElementById("viewer-loading");
+
+  // Reopening the same app you just backed out of: keep it running as-is
+  // (preserves scroll position, checked boxes, typed text, etc.) instead
+  // of reloading it from scratch.
+  if(currentViewerAppId === app.id && frame.srcdoc){
+    showScreen("screen-viewer");
+    return;
+  }
+
+  currentViewerAppId = app.id;
   loading.classList.remove("hidden");
   frame.onload = ()=> loading.classList.add("hidden");
   frame.srcdoc = app.code;
@@ -426,8 +435,6 @@ function bindEvents(){
   });
 
   document.getElementById("btn-back").addEventListener("click", ()=>{
-    document.getElementById("viewer-frame").srcdoc = "about:blank";
-    currentViewerAppId = null;
     showScreen("screen-library");
   });
 
