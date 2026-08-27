@@ -24,7 +24,7 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 
-.screen{display:none; height:100dvh; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.screen{display:none; height:100%; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch;}
 .screen.active{display:flex;}
 
 /* ---------- Topbar / library ---------- */
@@ -113,7 +113,7 @@ body{
 /* ---------- Viewer ---------- */
 #screen-viewer{position:relative; padding:0;}
 .viewer-statusbar{
-  flex:0 0 auto; height:var(--safe-top); background:var(--bg);
+  flex:0 0 auto; height:calc(var(--safe-top) - 2px); background:var(--bg);
 }
 .viewer-back-btn{
   position:absolute; z-index:10;
@@ -125,7 +125,7 @@ body{
 }
 .viewer-back-btn:active{background:rgba(20,20,24,.75);}
 .viewer-loading{
-  position:absolute; top:var(--safe-top); left:0; right:0; bottom:0; z-index:5;
+  position:absolute; top:calc(var(--safe-top) - 2px); left:0; right:0; bottom:0; z-index:5;
   display:flex; align-items:center; justify-content:center;
   background:var(--bg); color:var(--text-dim); font-size:14px;
 }
